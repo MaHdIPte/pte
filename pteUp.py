@@ -1,6 +1,8 @@
 from telegram import Update, Bot
 from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue
 from telegram.utils.request import Request
+from telegram import Bot
+from telegram.ext import Application, CommandHandler
 import requests
 import logging
 
