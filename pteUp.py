@@ -6,7 +6,7 @@ import logging
 
 # تنظیمات اولیه برای ثبت وقایع
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
+# hello
 # توکن ربات تلگرام سلام
 TOKEN = "7672987512:AAHO_oaU8ibBIwVAGwyNsreRQgZCpbZ7V90"
 
