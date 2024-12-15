@@ -1,10 +1,23 @@
-from telegram import Update
+from telegram import Update, Bot
 from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue
+from telegram.utils.request import Request
 import requests
 import logging
 
 # تنظیمات اولیه برای ثبت وقایع
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+# توکن ربات تلگرام
+TOKEN = "7672987512:AAHO_oaU8ibBIwVAGwyNsreRQgZCpbZ7V90"
+
+# تنظیمات پروکسی MTProto
+MTPROTO_PROXY = {
+    'proxy_url': 'https://t.me/proxy?server=Golden.itbt.ir&port=1380&secret=7oWAaHReHFTX5f9eK08wNaBzMy5hbWF6b25hd3MuY29t',  # آدرس پروکسی و پورت
+    'urllib3_proxy_kwargs': {
+        'username': '',  # اگر پروکسی نیاز به احراز هویت دارد، نام کاربری را وارد کنید
+        'password': '',  # اگر پروکسی نیاز به احراز هویت دارد، رمز عبور را وارد کنید
+    }
+}
 
 # آدرس صف برای مانیتورینگ
 QUEUE_URL = 'https://vpanel.pishgaman.net/pcc/user/'
@@ -109,8 +122,11 @@ def monitor_site(context: CallbackContext) -> None:
         logging.error(f'Error monitoring site: {e}')
 
 def main() -> None:
-    # توکن ربات تلگرامی خود را در اینجا وارد کنید
-    updater = Updater("7672987512:AAHO_oaU8ibBIwVAGwyNsreRQgZCpbZ7V90")
+    # ایجاد ربات تلگرام با تنظیم پروکسی MTProto
+    request = Request(con_pool_size=8, proxy_url=MTPROTO_PROXY['proxy_url'])
+    bot = Bot(token=TOKEN, request=request)
+
+    updater = Updater(bot=bot)
     dispatcher = updater.dispatcher
 
     # دستورهای ربات
