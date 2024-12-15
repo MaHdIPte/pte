@@ -1,5 +1,5 @@
 from telegram import Bot
-from telegram.ext import Application, CommandHandler, CallbackContext, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes
 from telegram.utils.request import Request
 import requests
 import logging
@@ -7,7 +7,7 @@ import logging
 # تنظیمات اولیه برای ثبت وقایع
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# توکن ربات تلگرام
+# توکن ربات تلگرام سلام
 TOKEN = "7672987512:AAHO_oaU8ibBIwVAGwyNsreRQgZCpbZ7V90"
 
 # تنظیمات پروکسی MTProto
@@ -43,9 +43,11 @@ def login():
 
 session = login()
 
+# تابع start
 async def start(update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text('سلام! به ربات مرکز تماس پشتیبانی خوش آمدید.')
 
+# تابع اضافه کردن به صف
 async def add_to_queue(update, context: ContextTypes.DEFAULT_TYPE) -> None:
     customer = ' '.join(context.args)
     queue.append(customer)
@@ -61,20 +63,25 @@ async def add_to_queue(update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         logging.error(f'Error adding customer to queue: {e}')
 
+# تابع حذف از صف
 async def remove_from_queue(update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    customer = queue.pop(0)
-    await update.message.reply_text(f'مشتری {customer} از صف خارج شد.')
-    logging.info(f'Customer {customer} removed from queue.')
+    if queue:
+        customer = queue.pop(0)
+        await update.message.reply_text(f'مشتری {customer} از صف خارج شد.')
+        logging.info(f'Customer {customer} removed from queue.')
 
-    try:
-        response = session.post(f'{QUEUE_URL}/remove', json={'customer': customer})
-        if response.status_code == 200:
-            await update.message.reply_text(f'مشتری {customer} از صف حذف شد.')
-        else:
-            await update.message.reply_text(f'خطایی در حذف مشتری از صف رخ داد.')
-    except Exception as e:
-        logging.error(f'Error removing customer from queue: {e}')
+        try:
+            response = session.post(f'{QUEUE_URL}/remove', json={'customer': customer})
+            if response.status_code == 200:
+                await update.message.reply_text(f'مشتری {customer} از صف حذف شد.')
+            else:
+                await update.message.reply_text(f'خطایی در حذف مشتری از صف رخ داد.')
+        except Exception as e:
+            logging.error(f'Error removing customer from queue: {e}')
+    else:
+        await update.message.reply_text("هیچ مشتری در صف وجود ندارد.")
 
+# تابع تغییر وضعیت کارشناس
 async def change_agent_status(update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if len(context.args) < 2:
         await update.message.reply_text('لطفاً نام کارشناس و وضعیت جدید را وارد کنید.')
@@ -89,7 +96,8 @@ async def change_agent_status(update, context: ContextTypes.DEFAULT_TYPE) -> Non
     else:
         await update.message.reply_text('کارشناس یافت نشد.')
 
-async def monitor_site(context: CallbackContext) -> None:
+# تابع مانیتورینگ سایت
+async def monitor_site(context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         response = session.get(f'{QUEUE_URL}/status')
         if response.status_code == 200:
@@ -117,19 +125,20 @@ async def monitor_site(context: CallbackContext) -> None:
     except Exception as e:
         logging.error(f'Error monitoring site: {e}')
 
+# تابع اصلی
 async def main() -> None:
     request = Request(con_pool_size=8, proxy_url=MTPROTO_PROXY['proxy_url'])
     bot = Bot(token=TOKEN, request=request)
     
     application = Application.builder().token(TOKEN).build()
 
-    # دستورات ربات
+    # اضافه کردن دستورات به ربات
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("add_to_queue", add_to_queue))
     application.add_handler(CommandHandler("remove_from_queue", remove_from_queue))
     application.add_handler(CommandHandler("change_agent_status", change_agent_status))
 
-    # شروع مانیتورینگ دوره‌ای
+    # ایجاد JobQueue برای مانیتورینگ دوره‌ای
     application.job_queue.run_repeating(monitor_site, interval=60, first=0)
 
     # شروع ربات
