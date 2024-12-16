@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 50%; border-collapse: collapse; margin: 20px 0; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>Queue Management</h1>
+    <h2>Current Queue</h2>
+    <table>
+        <tr>
+            <th>#</th>
+            <th>Customer</th>
+        </tr>
+        {% for customer in queue %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ customer }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    
+    <h2>Agents Status</h2>
+    <table>
+        <tr>
+            <th>Agent</th>
+            <th>Status</th>
+        </tr>
+        {% for agent, status in agents.items() %}
+        <tr>
+            <td>{{ agent }}</td>
+            <td>{{ status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
